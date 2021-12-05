@@ -8,7 +8,6 @@ import {NewGame} from './NewGame';
 
 interface AppState {
   database: Database | undefined,
-  games: Game[] | undefined,
 }
 
 export default class App extends React.PureComponent<{}, AppState> {
@@ -16,7 +15,6 @@ export default class App extends React.PureComponent<{}, AppState> {
     super(props);
     this.state = {
       database: undefined,
-      games: undefined,
     };
   }
 
@@ -25,18 +23,12 @@ export default class App extends React.PureComponent<{}, AppState> {
     db_future.then((database) => {
       // Database is ready
       this.setState({database});
-
-      // List games
-      (async () => {
-        let games = await database.listGames();
-        this.setState({games});
-      })();
     });
   }
 
   render() {
-    const {database, games} = this.state;
-    if(database === undefined || games === undefined) {
+    const {database} = this.state;
+    if(database === undefined) {
       return <p>Loading...</p>;
     } else {
       return (
@@ -47,7 +39,7 @@ export default class App extends React.PureComponent<{}, AppState> {
               <Route
                 path="/:game"
                 render={(props) => <GameView id={props.match.params.game} database={database} />} />
-              <Route path="/" render={() => <GamesList games={games} />} />
+              <Route path="/" render={() => <GamesList database={database} />} />
             </Switch>
           </BrowserRouter>
         </div>
