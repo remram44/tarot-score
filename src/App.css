@@ -29,3 +29,14 @@ table.players {
   margin-right: auto;
   margin-bottom: 2em;
 }
+
+/* https://stackoverflow.com/a/1368286 */
+button.like-link {
+  background: none !important;
+  border: none;
+  padding: 0 !important;
+  font-family: arial, sans-serif;
+  color: #069;
+  text-decoration: underline;
+  cursor: pointer;
+}

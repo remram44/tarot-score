@@ -11,12 +11,14 @@ export interface Player {
   name: string,
 }
 
+export type Contract = 'petite' | 'garde' | 'garde sans' | 'garde contre';
+
 export interface Round {
   id: number,
   game: number,
   attacker: number,
   called: number | null,
-  contract: 'petite' | 'garde' | 'garde sans' | 'garde contre',
+  contract: Contract,
   attackOudlers: number,
   attackScore: number,
 }
@@ -204,6 +206,17 @@ export class Database {
         accept(0);
       });
     }
+  }
+
+  setRound(round: Round): Promise<number> {
+    const transaction = this.idb.transaction(['rounds'], 'readwrite');
+    const rounds = transaction.objectStore('rounds');
+    return new Promise((accept, reject) => {
+      rounds.put(round).onsuccess = (event) => {
+        const roundId = (event.target as unknown as {result: number}).result;
+        accept(roundId);
+      };
+    });
   }
 }
 

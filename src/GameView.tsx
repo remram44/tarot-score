@@ -2,6 +2,7 @@ import React from 'react';
 import {Link, Redirect} from 'react-router-dom';
 import {Database, Game, Player, Round} from './db';
 import {totalScores} from './rules';
+import {RoundEdit} from './RoundEdit';
 import {RoundView} from './RoundView';
 
 interface GameViewProps {
@@ -13,8 +14,10 @@ interface GameInfo {
   game: Game,
   players: Player[],
   playersById: Map<number, Player>,
-  scores: Map<number, number>,
   rounds: Round[],
+  roundsById: Map<number, Round>,
+  scores: Map<number, number>,
+  editing: number | undefined,
 }
 
 interface GameViewState {
@@ -47,6 +50,9 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
           const playersById = new Map();
           players.forEach((player) => playersById.set(player.id, player));
 
+          const roundsById = new Map();
+          rounds.forEach((round) => roundsById.set(round.id, round));
+
           // Compute total scores
           const scores = totalScores(players, rounds);
 
@@ -56,7 +62,9 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
               players,
               playersById,
               rounds,
+              roundsById,
               scores,
+              editing: undefined,
             },
           });
         }
@@ -103,6 +111,44 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
     }
   }
 
+  editRound(roundId: number) {
+    this.setState((oldState) => {
+      const {gameInfo} = oldState;
+      if(gameInfo) {
+        return {gameInfo: {...gameInfo, editing: roundId}};
+      } else {
+        return {gameInfo};
+      }
+    });
+  }
+
+  async changeRound(round: Round): Promise<void> {
+    round.id = await this.props.database.setRound(round);
+    this.setState((oldState) => {
+      const {gameInfo} = oldState;
+      if(gameInfo) {
+        let roundIndex = undefined;
+        gameInfo.rounds.forEach((otherRound, index) => {
+          if(otherRound.id === round.id) {
+            roundIndex = index;
+          }
+        });
+        let rounds;
+        if(roundIndex === undefined) {
+          rounds = gameInfo.rounds.concat([round]);
+        } else {
+          rounds = gameInfo.rounds.slice(0, roundIndex).concat(
+            [round],
+            gameInfo.rounds.slice(roundIndex + 1),
+          );
+        }
+        return {gameInfo: {...gameInfo, rounds, editing: undefined}};
+      } else {
+        return {gameInfo};
+      }
+    });
+  }
+
   render() {
     const {gameInfo, removed} = this.state;
     if(removed) {
@@ -131,7 +177,15 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
             </thead>
             <tbody>
               {gameInfo.rounds.map((round) => (
-                <tr key={round.id}><RoundView game={gameInfo.game} players={gameInfo.players} playersById={gameInfo.playersById} round={round} /></tr>
+                <tr key={round.id}>
+                  <RoundView
+                    game={gameInfo.game}
+                    players={gameInfo.players}
+                    playersById={gameInfo.playersById}
+                    round={round}
+                    editRound={this.editRound.bind(this)}
+                  />
+                </tr>
               ))}
               <tr key="total">
                 <td key="header">TOTAL</td>
@@ -141,6 +195,9 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
               </tr>
             </tbody>
           </table>
+          {(gameInfo.editing !== undefined)?
+          <RoundEdit key={gameInfo.editing} round={gameInfo.roundsById.get(gameInfo.editing)!} players={gameInfo.players} changeRound={this.changeRound.bind(this)} />
+            :undefined}
         </>
       );
     }

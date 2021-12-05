@@ -7,6 +7,7 @@ interface RoundViewProps {
   players: Player[],
   playersById: Map<number, Player>,
   round: Round,
+  editRound: (roundId: number) => void,
 }
 
 export class RoundView extends React.PureComponent<RoundViewProps> {
@@ -25,7 +26,9 @@ export class RoundView extends React.PureComponent<RoundViewProps> {
 
     return (<>
       <td key="round">
-        {round.id}: {playersById.get(round.attacker)!.name} {round.contract}, {round.attackScore}, {(round.attackScore >= target)?"win +":"fail -"}{Math.abs(round.attackScore - target)}
+        <button className="like-link" onClick={() => this.props.editRound(round.id)}>
+          {round.id}: {playersById.get(round.attacker)!.name} {round.contract}, {(round.attackScore >= target)?"win +":"fail -"}{Math.abs(round.attackScore - target)}
+        </button>
       </td>
       {players.map((player) => (
         <td key={player.id}>{renderPlayerScore(player.id)}</td>
