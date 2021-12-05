@@ -133,6 +133,27 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
     }
   }
 
+  rename() {
+    const {gameInfo} = this.state;
+    if(!gameInfo) {
+      return;
+    } else {
+      const {game} = gameInfo;
+      const newName = prompt("New name", game.name);
+      if(newName && newName !== game.name) {
+        (async () => {
+          await this.props.database.renameGame(game.id, newName);
+          this.setState({
+            gameInfo: {
+              ...gameInfo,
+              game: {...game, name: newName},
+            },
+          });
+        })();
+      }
+    }
+  }
+
   renderRound(round: Round) {
     const {gameInfo} = this.state;
     if(!gameInfo) {
@@ -169,7 +190,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
       return (
         <>
           <p><Link to="/">Back to games</Link></p>
-          <h1>{gameInfo.game.name}</h1>
+          <h1>{gameInfo.game.name} <button onClick={() => this.rename()}>(edit)</button></h1>
           <table className="scores">
             <thead>
               <tr>

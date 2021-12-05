@@ -116,6 +116,7 @@ export class Database {
       ['games', 'game_players', 'rounds'],
       'readonly',
     );
+    // Get game
     const game = await this._getGame(transaction, id);
     if(game === null) {
       return null;
@@ -135,6 +136,24 @@ export class Database {
       games.add({name: "New Game", created: new Date(), modified: new Date()}).onsuccess = (event) => {
         const gameId = (event.target as unknown as {result: number}).result;
         accept(gameId);
+      };
+    });
+  }
+
+  async renameGame(id: number, name: string): Promise<void> {
+    const transaction = this.idb.transaction(['games'], 'readwrite');
+    const games = transaction.objectStore('games');
+    return new Promise((accept, reject) => {
+      games.get(id).onsuccess = (event) => {
+        const game = (event.target as unknown as {result: Game}).result;
+        if(!game) {
+          reject(new Error("No such game"));
+        } else {
+          game.name = name;
+          games.put(game).onsuccess = () => {
+            accept();
+          };
+        }
       };
     });
   }
