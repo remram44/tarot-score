@@ -53,6 +53,21 @@ export class Database {
       };
     });
   }
+
+  async getGame(id: number): Promise<Game | null> {
+    const transaction = this.idb.transaction(['games'], 'readonly');
+    const games = transaction.objectStore('games');
+    return new Promise((accept, reject) => {
+      games.get(id).onsuccess = (event) => {
+        const game = (event.target as unknown as {result: Game | null | undefined}).result;
+        if(game === undefined) {
+          accept(null);
+        } else {
+          accept(game);
+        }
+      };
+    });
+  }
 }
 
 async function addTestData(database: Database): Promise<void> {

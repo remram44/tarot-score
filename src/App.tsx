@@ -3,10 +3,11 @@ import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import './App.css';
 import {Database, Game, db_future} from './db';
 import {GamesList} from './GamesList';
+import {GameView} from './GameView';
 
 interface AppState {
-  database: Database | null,
-  games: Game[] | null,
+  database: Database | undefined,
+  games: Game[] | undefined,
 }
 
 function NewGame() {
@@ -17,8 +18,8 @@ export default class App extends React.PureComponent<{}, AppState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      database: null,
-      games: null,
+      database: undefined,
+      games: undefined,
     };
   }
 
@@ -37,8 +38,8 @@ export default class App extends React.PureComponent<{}, AppState> {
   }
 
   render() {
-    const games = this.state.games;
-    if(games === null) {
+    const {database, games} = this.state;
+    if(database === undefined || games === undefined) {
       return <p>Loading...</p>;
     } else {
       return (
@@ -46,6 +47,9 @@ export default class App extends React.PureComponent<{}, AppState> {
           <BrowserRouter>
             <Switch>
               <Route path="/new" render={() => <NewGame />} />
+              <Route
+                path="/:game"
+                render={(props) => <GameView id={props.match.params.game} database={database} />} />
               <Route path="/" render={() => <GamesList games={games} />} />
             </Switch>
           </BrowserRouter>
