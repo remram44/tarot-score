@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {Database, Game, Player, Round} from './db';
 
 interface GameViewProps {
@@ -167,6 +168,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
     } else {
       return (
         <>
+          <p><Link to="/">Back to games</Link></p>
           <h1>{gameInfo.game.name}</h1>
           <table className="scores">
             <thead>

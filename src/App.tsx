@@ -4,14 +4,11 @@ import './App.css';
 import {Database, Game, db_future} from './db';
 import {GamesList} from './GamesList';
 import {GameView} from './GameView';
+import {NewGame} from './NewGame';
 
 interface AppState {
   database: Database | undefined,
   games: Game[] | undefined,
-}
-
-function NewGame() {
-  return <p>TODO Create new game here</p>;
 }
 
 export default class App extends React.PureComponent<{}, AppState> {
@@ -46,7 +43,7 @@ export default class App extends React.PureComponent<{}, AppState> {
         <div className="App">
           <BrowserRouter>
             <Switch>
-              <Route path="/new" render={() => <NewGame />} />
+              <Route path="/new" render={() => <NewGame database={database} />} />
               <Route
                 path="/:game"
                 render={(props) => <GameView id={props.match.params.game} database={database} />} />

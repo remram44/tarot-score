@@ -127,6 +127,17 @@ export class Database {
       return {game, players, rounds};
     }
   }
+
+  async createGame(): Promise<number> {
+    const transaction = this.idb.transaction(['games'], 'readwrite');
+    const games = transaction.objectStore('games');
+    return new Promise((accept, reject) => {
+      games.add({name: "New Game", created: new Date(), modified: new Date()}).onsuccess = (event) => {
+        const gameId = (event.target as unknown as {result: number}).result;
+        accept(gameId);
+      };
+    });
+  }
 }
 
 async function addTestData(database: Database): Promise<void> {
