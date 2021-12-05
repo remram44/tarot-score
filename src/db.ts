@@ -177,6 +177,43 @@ export class Database {
       };
     });
   }
+
+  async removeGame(id: number): Promise<void> {
+    const transaction = this.idb.transaction(['games', 'game_players', 'rounds'], 'readwrite');
+    // Delete players
+    await new Promise((accept, reject) => {
+      const game_players = transaction.objectStore('game_players');
+      game_players.index('game').openCursor(IDBKeyRange.only(id)).onsuccess = (event) => {
+        const cursor = (event.target as unknown as {result?: IDBCursor}).result;
+        if(cursor) {
+          cursor.delete();
+          cursor.continue();
+        } else {
+          accept(0);
+        }
+      };
+    });
+    // Delete rounds
+    await new Promise((accept, reject) => {
+      const rounds = transaction.objectStore('rounds');
+      rounds.index('game').openCursor(IDBKeyRange.only(id)).onsuccess = (event) => {
+        const cursor = (event.target as unknown as {result?: IDBCursor}).result;
+        if(cursor) {
+          cursor.delete();
+          cursor.continue();
+        } else {
+          accept(0);
+        }
+      };
+    });
+    // Delete game
+    await new Promise((accept, reject) => {
+      const games = transaction.objectStore('games');
+      games.delete(id).onsuccess = (event) => {
+        accept(0);
+      };
+    });
+  }
 }
 
 async function addTestData(database: Database): Promise<void> {

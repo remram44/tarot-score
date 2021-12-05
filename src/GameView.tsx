@@ -1,5 +1,5 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
+import {Link, Redirect} from 'react-router-dom';
 import {Database, Game, Player, Round} from './db';
 
 interface GameViewProps {
@@ -17,6 +17,7 @@ interface GameInfo {
 
 interface GameViewState {
   gameInfo: GameInfo | undefined | null,
+  removed: boolean,
 }
 
 function roundTarget(round: Round): number {
@@ -74,6 +75,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
     super(props);
     this.state = {
       gameInfo: undefined,
+      removed: false,
     };
   }
 
@@ -139,7 +141,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
       return;
     } else {
       const {game} = gameInfo;
-      const newName = prompt("New name", game.name);
+      const newName = window.prompt("New name", game.name);
       if(newName && newName !== game.name) {
         (async () => {
           await this.props.database.renameGame(game.id, newName);
@@ -148,6 +150,24 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
               ...gameInfo,
               game: {...game, name: newName},
             },
+          });
+        })();
+      }
+    }
+  }
+
+  remove() {
+    const {gameInfo} = this.state;
+    if(!gameInfo) {
+      return;
+    } else {
+      const {game} = gameInfo;
+      const confirmed = window.confirm("Are you sure you want to delete?");
+      if(confirmed) {
+        (async () => {
+          await this.props.database.removeGame(game.id);
+          this.setState({
+            removed: true,
           });
         })();
       }
@@ -181,8 +201,10 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
   }
 
   render() {
-    const {gameInfo} = this.state;
-    if(gameInfo === undefined) {
+    const {gameInfo, removed} = this.state;
+    if(removed) {
+      return <Redirect to="/" />;
+    } else if(gameInfo === undefined) {
       return <p>Loading...</p>;
     } else if(gameInfo === null) {
       return <p>No such game</p>;
@@ -190,7 +212,11 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
       return (
         <>
           <p><Link to="/">Back to games</Link></p>
-          <h1>{gameInfo.game.name} <button onClick={() => this.rename()}>(edit)</button></h1>
+          <h1>
+            {gameInfo.game.name}{' '}
+            <button onClick={() => this.rename()}>(edit)</button>{' '}
+            <button onClick={() => this.remove()}>(delete)</button>
+          </h1>
           <table className="scores">
             <thead>
               <tr>
