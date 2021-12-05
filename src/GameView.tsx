@@ -30,6 +30,44 @@ function roundTarget(round: Round): number {
   }
 }
 
+function roundContractMultiplier(round: Round): number {
+  if(round.contract === 'garde') {
+    return 2;
+  } else if(round.contract === 'garde sans') {
+    return 4;
+  } else if(round.contract === 'garde contre') {
+    return 6;
+  } else {
+    return 1;
+  }
+}
+
+function roundPlayerMultiplier(playerId: number, players: number, round: Round): number {
+  if(players === 5) {
+    if(playerId === round.attacker && playerId === round.called) {
+      // Attacker who called themselves (1 against 4)
+      return 4;
+    } else if(playerId === round.attacker) {
+      // Attacker who called someone else (2 for them, 1 for callee)
+      return 2;
+    } else if(playerId === round.called) {
+      // Player called (king)
+      return 1;
+    } else {
+      // Defense
+      return -1;
+    }
+  } else {
+    if(playerId === round.attacker) {
+      // Attacker
+      return players - 1;
+    } else {
+      // Defense
+      return -1;
+    }
+  }
+}
+
 export class GameView extends React.PureComponent<GameViewProps, GameViewState> {
   constructor(props: GameViewProps) {
     super(props);
@@ -67,42 +105,12 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
             const attackSuccessful = round.score >= target;
 
             // The multiplier depends on the contract chosen by the attack
-            let contractMultiplier = 1;
-            if(round.contract === 'garde') {
-              contractMultiplier = 2;
-            } else if(round.contract === 'garde sans') {
-              contractMultiplier = 4;
-            } else if(round.contract === 'garde contre') {
-              contractMultiplier = 6;
-            }
+            let contractMultiplier = roundContractMultiplier(round);
 
             const score = (25 + Math.abs(round.score - target)) * (attackSuccessful?1:-1) * contractMultiplier;
 
             players.forEach((player) => {
-              let change = score;
-              if(players.length === 5) {
-                if(player.id === round.attacker && player.id === round.called) {
-                  // Attacker who called themselves
-                  change = score * 4;
-                } else if(player.id === round.attacker) {
-                  // Attacker who called someone else
-                  change = score * 2;
-                } else if(player.id === round.called) {
-                  // Player called (king)
-                  change = score;
-                } else {
-                  // Defense
-                  change = -score;
-                }
-              } else {
-                if(player.id === round.attacker) {
-                  // Attacker
-                  change = (players.length - 1) * score;
-                } else {
-                  // Defense
-                  change = -score;
-                }
-              }
+              const change = score * roundPlayerMultiplier(player.id, players.length, round);
               totalScores.set(
                 player.id,
                 totalScores.get(player.id) + change,
@@ -130,8 +138,22 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
       return undefined;
     } else {
       const target = roundTarget(round);
+      const attackSuccessful = round.score >= target;
+      const contractMultiplier = roundContractMultiplier(round);
+      const score = (25 + Math.abs(round.score - target)) * (attackSuccessful?1:-1) * contractMultiplier;
+
+      const renderPlayerScore = (playerId: number) => {
+        const change = score * roundPlayerMultiplier(playerId, gameInfo.players.length, round);
+        return change;
+      };
+
       return (<>
-        {round.id}: {gameInfo.playersById.get(round.attacker)!.name} {round.contract}, {round.score}, {(round.score >= target)?"win +":"fail -"}{Math.abs(round.score - target)}
+        <td key="round">
+          {round.id}: {gameInfo.playersById.get(round.attacker)!.name} {round.contract}, {round.score}, {(round.score >= target)?"win +":"fail -"}{Math.abs(round.score - target)}
+        </td>
+        {gameInfo.players.map((player) => (
+          <td key={player.id}>{renderPlayerScore(player.id)}</td>
+        ))}
       </>);
     }
   }
@@ -146,18 +168,27 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
       return (
         <>
           <h1>{gameInfo.game.name}</h1>
-          <p>Players:</p>
-          <ul className="players">
-            {gameInfo.players.map((player) => (
-              <li key={player.id}>{player.name} | {gameInfo.totalScores.get(player.id)}</li>
-            ))}
-          </ul>
-          <p>Rounds:</p>
-          <ul className="rounds">
-            {gameInfo.rounds.map((round) => (
-              <li key={round.id}>{this.renderRound(round)}</li>
-            ))}
-          </ul>
+          <table className="scores">
+            <thead>
+              <tr>
+                <td className="corner"></td>
+                {gameInfo.players.map((player) => (
+                  <th key={player.id}>{player.name}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {gameInfo.rounds.map((round) => (
+                <tr key={round.id}>{this.renderRound(round)}</tr>
+              ))}
+              <tr key="total">
+                <td key="header">TOTAL</td>
+                {gameInfo.players.map((player) => (
+                  <th key={player.id}>{gameInfo.totalScores.get(player.id)}</th>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </>
       );
     }

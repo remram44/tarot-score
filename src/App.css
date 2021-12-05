@@ -9,3 +9,17 @@
 .games-list .new-game {
   font-style: oblique;
 }
+
+table.scores {
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: collapse;
+}
+
+table.scores td, table.scores th {
+  border: 1px solid black;
+}
+
+table.scores td.corner {
+  border: 0;
+}
