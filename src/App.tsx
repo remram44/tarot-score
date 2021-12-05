@@ -1,10 +1,11 @@
 import React from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import './App.css';
-import {Database, Game, db_future} from './db';
+import {Database, db_future} from './db';
 import {GamesList} from './GamesList';
 import {GameView} from './GameView';
 import {NewGame} from './NewGame';
+import {SetPlayers} from './SetPlayers';
 
 interface AppState {
   database: Database | undefined,
@@ -36,6 +37,9 @@ export default class App extends React.PureComponent<{}, AppState> {
           <BrowserRouter>
             <Switch>
               <Route path="/new" render={() => <NewGame database={database} />} />
+              <Route
+                path="/set-players/:game"
+                render={(props) => <SetPlayers id={props.match.params.game} database={database} />} />
               <Route
                 path="/:game"
                 render={(props) => <GameView id={props.match.params.game} database={database} />} />

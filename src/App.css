@@ -23,3 +23,9 @@ table.scores td, table.scores th {
 table.scores td.corner {
   border: 0;
 }
+
+table.players {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2em;
+}

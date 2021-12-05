@@ -30,7 +30,7 @@ export class NewGame extends React.PureComponent<NewGameProps, NewGameState> {
     if(gameId === undefined) {
       return <p>Creating...</p>;
     } else {
-      return <Redirect to={`/${gameId}`} />;
+      return <Redirect to={`/set-players/${gameId}`} />;
     }
   }
 }
