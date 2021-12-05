@@ -1,7 +1,8 @@
 import React from 'react';
 import {Link, Redirect} from 'react-router-dom';
 import {Database, Game, Player, Round} from './db';
-import {roundTarget, roundContractMultiplier, roundPlayerMultiplier, totalScores} from './rules';
+import {totalScores} from './rules';
+import {RoundView} from './RoundView';
 
 interface GameViewProps {
   id: string,
@@ -102,32 +103,6 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
     }
   }
 
-  renderRound(round: Round) {
-    const {gameInfo} = this.state;
-    if(!gameInfo) {
-      return undefined;
-    } else {
-      const target = roundTarget(round);
-      const attackSuccessful = round.score >= target;
-      const contractMultiplier = roundContractMultiplier(round);
-      const score = (25 + Math.abs(round.score - target)) * (attackSuccessful?1:-1) * contractMultiplier;
-
-      const renderPlayerScore = (playerId: number) => {
-        const change = score * roundPlayerMultiplier(playerId, gameInfo.players.length, round);
-        return change;
-      };
-
-      return (<>
-        <td key="round">
-          {round.id}: {gameInfo.playersById.get(round.attacker)!.name} {round.contract}, {round.score}, {(round.score >= target)?"win +":"fail -"}{Math.abs(round.score - target)}
-        </td>
-        {gameInfo.players.map((player) => (
-          <td key={player.id}>{renderPlayerScore(player.id)}</td>
-        ))}
-      </>);
-    }
-  }
-
   render() {
     const {gameInfo, removed} = this.state;
     if(removed) {
@@ -156,7 +131,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
             </thead>
             <tbody>
               {gameInfo.rounds.map((round) => (
-                <tr key={round.id}>{this.renderRound(round)}</tr>
+                <tr key={round.id}><RoundView game={gameInfo.game} players={gameInfo.players} playersById={gameInfo.playersById} round={round} /></tr>
               ))}
               <tr key="total">
                 <td key="header">TOTAL</td>
