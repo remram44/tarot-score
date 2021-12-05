@@ -1,13 +1,19 @@
 import React from 'react';
+import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import './App.css';
 import {Database, Game, db_future} from './db';
+import {GamesList} from './GamesList';
 
 interface AppState {
   database: Database | null,
   games: Game[] | null,
 }
 
-class App extends React.PureComponent<{}, AppState> {
+function NewGame() {
+  return <p>TODO Create new game here</p>;
+}
+
+export default class App extends React.PureComponent<{}, AppState> {
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -31,24 +37,20 @@ class App extends React.PureComponent<{}, AppState> {
   }
 
   render() {
-    if(this.state.games === null) {
-      return (
-        <div className="App">
-          <p>Loading...</p>
-        </div>
-      );
+    const games = this.state.games;
+    if(games === null) {
+      return <p>Loading...</p>;
     } else {
       return (
         <div className="App">
-          <ul>
-            {this.state.games.map((game) => (
-              <li key={game.id}>{game.name}</li>
-            ))}
-          </ul>
+          <BrowserRouter>
+            <Switch>
+              <Route path="/new" render={() => <NewGame />} />
+              <Route path="/" render={() => <GamesList games={games} />} />
+            </Switch>
+          </BrowserRouter>
         </div>
       );
     }
   }
 }
-
-export default App;
