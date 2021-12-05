@@ -48,7 +48,7 @@ export class Database {
     this.idb = idb;
   }
 
-  async listGames(): Promise<Game[]> {
+  listGames(): Promise<Game[]> {
     const transaction = this.idb.transaction(['games'], 'readonly');
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
@@ -65,7 +65,7 @@ export class Database {
     });
   }
 
-  async _getGame(transaction: IDBTransaction, id: number): Promise<Game | null> {
+  _getGame(transaction: IDBTransaction, id: number): Promise<Game | null> {
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
       games.get(id).onsuccess = (event) => {
@@ -79,7 +79,7 @@ export class Database {
     });
   }
 
-  async _getPlayers(transaction: IDBTransaction, id: number): Promise<Player[]> {
+  _getPlayers(transaction: IDBTransaction, id: number): Promise<Player[]> {
     const game_players = transaction.objectStore('game_players');
     return new Promise((accept, reject) => {
       const array: Player[] = [];
@@ -95,7 +95,7 @@ export class Database {
     });
   }
 
-  async _getRounds(transaction: IDBTransaction, id: number): Promise<Round[]> {
+  _getRounds(transaction: IDBTransaction, id: number): Promise<Round[]> {
     const rounds = transaction.objectStore('rounds');
     return new Promise((accept, reject) => {
       const array: Round[] = [];
@@ -129,7 +129,7 @@ export class Database {
     }
   }
 
-  async createGame(): Promise<number> {
+  createGame(): Promise<number> {
     const transaction = this.idb.transaction(['games'], 'readwrite');
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
@@ -140,7 +140,7 @@ export class Database {
     });
   }
 
-  async renameGame(id: number, name: string): Promise<void> {
+  renameGame(id: number, name: string): Promise<void> {
     const transaction = this.idb.transaction(['games'], 'readwrite');
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
