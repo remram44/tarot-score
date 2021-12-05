@@ -60,12 +60,12 @@ export function totalScores(players: Player[], rounds: Round[]): Map<number, num
     const target = roundTarget(round);
 
     // Attack succeeds if number of points is reached
-    const attackSuccessful = round.score >= target;
+    const attackSuccessful = round.attackScore >= target;
 
     // The multiplier depends on the contract chosen by the attack
     let contractMultiplier = roundContractMultiplier(round);
 
-    const score = (25 + Math.abs(round.score - target)) * (attackSuccessful?1:-1) * contractMultiplier;
+    const score = (25 + Math.abs(round.attackScore - target)) * (attackSuccessful?1:-1) * contractMultiplier;
 
     players.forEach((player) => {
       const change = score * roundPlayerMultiplier(player.id, players.length, round);

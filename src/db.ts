@@ -18,7 +18,7 @@ export interface Round {
   called: number | null,
   contract: 'petite' | 'garde' | 'garde sans' | 'garde contre',
   attackOudlers: number,
-  score: number,
+  attackScore: number,
 }
 
 const VERSION = 1;
@@ -250,13 +250,13 @@ async function addTestData(database: Database): Promise<void> {
     // Rounds
     const rounds = transaction.objectStore('rounds');
     rounds.add(
-      {id: 1, game: 1, attacker: 2, called: null, contract: 'petite', attackOudlers: 2, score: 48},
+      {id: 1, game: 1, attacker: 2, called: null, contract: 'petite', attackOudlers: 2, attackScore: 48},
     );
     rounds.add(
-      {id: 2, game: 1, attacker: 3, called: null, contract: 'garde', attackOudlers: 3, score: 45},
+      {id: 2, game: 1, attacker: 3, called: null, contract: 'garde', attackOudlers: 3, attackScore: 45},
     );
     rounds.add(
-      {id: 3, game: 1, attacker: 1, called: null, contract: 'petite', attackOudlers: 1, score: 49},
+      {id: 3, game: 1, attacker: 1, called: null, contract: 'petite', attackOudlers: 1, attackScore: 49},
     );
   }
 }
