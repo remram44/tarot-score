@@ -5,6 +5,22 @@ export interface Game {
   modified: Date,
 }
 
+export interface Player {
+  id: number,
+  game: number,
+  name: string,
+}
+
+export interface Round {
+  id: number,
+  game: number,
+  attacker: number,
+  called: number | null,
+  contract: 'petite' | 'garde' | 'garde sans' | 'garde contre',
+  attackOudlers: number,
+  score: number,
+}
+
 const VERSION = 1;
 
 const SCHEMA = [
@@ -16,17 +32,12 @@ const SCHEMA = [
   {
     name: 'game_players',
     config: {keyPath: 'id', autoIncrement: true},
-    indexes: ['game', 'name'],
+    indexes: ['game'],
   },
   {
     name: 'rounds',
     config: {keyPath: 'id', autoIncrement: true},
     indexes: ['game'],
-  },
-  {
-    name: 'points',
-    config: {keyPath: 'round_player_pair', autoIncrement: true},
-    indexes: [],
   },
 ];
 
@@ -42,7 +53,7 @@ export class Database {
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
       const array: Game[] = [];
-      games.openCursor().onsuccess = (event) => {
+      games.index('created').openCursor().onsuccess = (event) => {
         const cursor = (event.target as unknown as {result?: IDBCursor}).result;
         if(cursor) {
           array.push((cursor as unknown as {value: Game}).value);
@@ -54,8 +65,7 @@ export class Database {
     });
   }
 
-  async getGame(id: number): Promise<Game | null> {
-    const transaction = this.idb.transaction(['games'], 'readonly');
+  async _getGame(transaction: IDBTransaction, id: number): Promise<Game | null> {
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
       games.get(id).onsuccess = (event) => {
@@ -68,11 +78,63 @@ export class Database {
       };
     });
   }
+
+  async _getPlayers(transaction: IDBTransaction, id: number): Promise<Player[]> {
+    const game_players = transaction.objectStore('game_players');
+    return new Promise((accept, reject) => {
+      const array: Player[] = [];
+      game_players.index('game').openCursor(IDBKeyRange.only(id)).onsuccess = (event) => {
+        const cursor = (event.target as unknown as {result?: IDBCursor}).result;
+        if(cursor) {
+          array.push((cursor as unknown as {value: Player}).value);
+          cursor.continue();
+        } else {
+          accept(array);
+        }
+      };
+    });
+  }
+
+  async _getRounds(transaction: IDBTransaction, id: number): Promise<Round[]> {
+    const rounds = transaction.objectStore('rounds');
+    return new Promise((accept, reject) => {
+      const array: Round[] = [];
+      rounds.index('game').openCursor(IDBKeyRange.only(id)).onsuccess = (event) => {
+        const cursor = (event.target as unknown as {result?: IDBCursor}).result;
+        if(cursor) {
+          array.push((cursor as unknown as {value: Round}).value);
+          cursor.continue();
+        } else {
+          accept(array);
+        }
+      };
+    });
+  }
+
+  async getGame(id: number): Promise<{game: Game, players: Player[], rounds: Round[]} | null> {
+    const transaction = this.idb.transaction(
+      ['games', 'game_players', 'rounds'],
+      'readonly',
+    );
+    const game = await this._getGame(transaction, id);
+    if(game === null) {
+      return null;
+    } else {
+      // Get the players and rounds
+      const players = await this._getPlayers(transaction, id);
+      const rounds = await this._getRounds(transaction, id);
+
+      return {game, players, rounds};
+    }
+  }
 }
 
 async function addTestData(database: Database): Promise<void> {
   // Open transaction
-  const transaction = database.idb.transaction(['games'], 'readwrite');
+  const transaction = database.idb.transaction(
+    ['games', 'game_players', 'rounds'],
+    'readwrite',
+  );
   const games = transaction.objectStore('games');
 
   // Check if data is present
@@ -89,11 +151,34 @@ async function addTestData(database: Database): Promise<void> {
 
   if(!hasData) {
     // Add test data
+    // Games
     games.add(
-      {name: "Game 1", created: new Date('2021-11-27T23:32:27'), modified: new Date('2021-11-28T02:07:15')},
+      {id: 1, name: "Game 1", created: new Date('2021-11-27T23:32:27'), modified: new Date('2021-11-28T02:07:15')},
     );
     games.add(
-      {name: "Game 2", created: new Date('2021-11-29T01:45:39'), modified: new Date('2021-11-29T05:57:31')},
+      {id: 2, name: "Game 2", created: new Date('2021-11-29T01:45:39'), modified: new Date('2021-11-29T05:57:31')},
+    );
+    // Players
+    const game_players = transaction.objectStore('game_players');
+    game_players.add(
+      {id: 1, game: 1, name: "Remi"},
+    );
+    game_players.add(
+      {id: 2, game: 1, name: "Vicky"},
+    );
+    game_players.add(
+      {id: 3, game: 1, name: "Brian"},
+    );
+    // Rounds
+    const rounds = transaction.objectStore('rounds');
+    rounds.add(
+      {id: 1, game: 1, attacker: 2, called: null, contract: 'petite', attackOudlers: 2, score: 48},
+    );
+    rounds.add(
+      {id: 2, game: 1, attacker: 3, called: null, contract: 'garde', attackOudlers: 3, score: 45},
+    );
+    rounds.add(
+      {id: 3, game: 1, attacker: 1, called: null, contract: 'petite', attackOudlers: 1, score: 49},
     );
   }
 }
