@@ -1,6 +1,7 @@
 import React from 'react';
 import {Link, Redirect} from 'react-router-dom';
 import {Database, Game, Player, Round} from './db';
+import {roundTarget, roundContractMultiplier, roundPlayerMultiplier, totalScores} from './rules';
 
 interface GameViewProps {
   id: string,
@@ -11,63 +12,13 @@ interface GameInfo {
   game: Game,
   players: Player[],
   playersById: Map<number, Player>,
-  totalScores: Map<number, number>,
+  scores: Map<number, number>,
   rounds: Round[],
 }
 
 interface GameViewState {
   gameInfo: GameInfo | undefined | null,
   removed: boolean,
-}
-
-function roundTarget(round: Round): number {
-  if(round.attackOudlers === 1) {
-    return 51;
-  } else if(round.attackOudlers === 2) {
-    return 41;
-  } else if(round.attackOudlers === 3) {
-    return 36;
-  } else {
-    return 56;
-  }
-}
-
-function roundContractMultiplier(round: Round): number {
-  if(round.contract === 'garde') {
-    return 2;
-  } else if(round.contract === 'garde sans') {
-    return 4;
-  } else if(round.contract === 'garde contre') {
-    return 6;
-  } else {
-    return 1;
-  }
-}
-
-function roundPlayerMultiplier(playerId: number, players: number, round: Round): number {
-  if(players === 5) {
-    if(playerId === round.attacker && playerId === round.called) {
-      // Attacker who called themselves (1 against 4)
-      return 4;
-    } else if(playerId === round.attacker) {
-      // Attacker who called someone else (2 for them, 1 for callee)
-      return 2;
-    } else if(playerId === round.called) {
-      // Player called (king)
-      return 1;
-    } else {
-      // Defense
-      return -1;
-    }
-  } else {
-    if(playerId === round.attacker) {
-      // Attacker
-      return players - 1;
-    } else {
-      // Defense
-      return -1;
-    }
-  }
 }
 
 export class GameView extends React.PureComponent<GameViewProps, GameViewState> {
@@ -96,30 +47,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
           players.forEach((player) => playersById.set(player.id, player));
 
           // Compute total scores
-          const totalScores = new Map();
-          players.forEach((player) => {
-            totalScores.set(player.id, 0);
-          });
-          rounds.forEach((round) => {
-            // Target number of points, depending on oudlers
-            const target = roundTarget(round);
-
-            // Attack succeeds if number of points is reached
-            const attackSuccessful = round.score >= target;
-
-            // The multiplier depends on the contract chosen by the attack
-            let contractMultiplier = roundContractMultiplier(round);
-
-            const score = (25 + Math.abs(round.score - target)) * (attackSuccessful?1:-1) * contractMultiplier;
-
-            players.forEach((player) => {
-              const change = score * roundPlayerMultiplier(player.id, players.length, round);
-              totalScores.set(
-                player.id,
-                totalScores.get(player.id) + change,
-              );
-            });
-          });
+          const scores = totalScores(players, rounds);
 
           this.setState({
             gameInfo: {
@@ -127,7 +55,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
               players,
               playersById,
               rounds,
-              totalScores,
+              scores,
             },
           });
         }
@@ -233,7 +161,7 @@ export class GameView extends React.PureComponent<GameViewProps, GameViewState> 
               <tr key="total">
                 <td key="header">TOTAL</td>
                 {gameInfo.players.map((player) => (
-                  <th key={player.id}>{gameInfo.totalScores.get(player.id)}</th>
+                  <th key={player.id}>{gameInfo.scores.get(player.id)}</th>
                 ))}
               </tr>
             </tbody>
