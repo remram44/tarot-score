@@ -129,8 +129,7 @@ export class Database {
     }
   }
 
-  createGame(): Promise<number> {
-    const transaction = this.idb.transaction(['games'], 'readwrite');
+  _createGame(transaction: IDBTransaction): Promise<number> {
     const games = transaction.objectStore('games');
     return new Promise((accept, reject) => {
       games.add({name: "New Game", created: new Date(), modified: new Date()}).onsuccess = (event) => {
@@ -138,6 +137,27 @@ export class Database {
         accept(gameId);
       };
     });
+  }
+
+  _createPlayer(transaction: IDBTransaction, gameId: number, name: string): Promise<void> {
+    const game_players = transaction.objectStore('game_players');
+    return new Promise((accept, reject) => {
+      game_players.add(
+        {game: gameId, name},
+      );
+      accept();
+    });
+  }
+
+  async createGame(): Promise<number> {
+    const transaction = this.idb.transaction(['games', 'game_players'], 'readwrite');
+    // Create game
+    const gameId = await this._createGame(transaction);
+    // Create players
+    for(const name of ['Player 1', 'Player 2', 'Player 3']) {
+      await this._createPlayer(transaction, gameId, name);
+    }
+    return gameId;
   }
 
   renameGame(id: number, name: string): Promise<void> {
