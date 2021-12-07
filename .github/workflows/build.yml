@@ -20,7 +20,7 @@ jobs:
         restore-keys: |
           node-
     - run: npm install
-    - run: PUBLIC_URL=/tarot-score/ npm run build
+    - run: PUBLIC_URL=/tarot-score/ REACT_APP_ROUTER=hash npm run build
     - run: echo ${{ github.ref }}
     - uses: peaceiris/actions-gh-pages@v3
       with:
