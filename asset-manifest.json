@@ -1,24 +1,24 @@
 {
   "files": {
     "main.css": "/tarot-score/static/css/main.5a1f2dd0.chunk.css",
-    "main.js": "/tarot-score/static/js/main.41af2e18.chunk.js",
-    "main.js.map": "/tarot-score/static/js/main.41af2e18.chunk.js.map",
+    "main.js": "/tarot-score/static/js/main.f87fbf34.chunk.js",
+    "main.js.map": "/tarot-score/static/js/main.f87fbf34.chunk.js.map",
     "runtime-main.js": "/tarot-score/static/js/runtime-main.4d173b5a.js",
     "runtime-main.js.map": "/tarot-score/static/js/runtime-main.4d173b5a.js.map",
-    "static/js/2.ce7f0f40.chunk.js": "/tarot-score/static/js/2.ce7f0f40.chunk.js",
-    "static/js/2.ce7f0f40.chunk.js.map": "/tarot-score/static/js/2.ce7f0f40.chunk.js.map",
+    "static/js/2.ea5a519b.chunk.js": "/tarot-score/static/js/2.ea5a519b.chunk.js",
+    "static/js/2.ea5a519b.chunk.js.map": "/tarot-score/static/js/2.ea5a519b.chunk.js.map",
     "static/js/3.bcc0dffb.chunk.js": "/tarot-score/static/js/3.bcc0dffb.chunk.js",
     "static/js/3.bcc0dffb.chunk.js.map": "/tarot-score/static/js/3.bcc0dffb.chunk.js.map",
     "index.html": "/tarot-score/index.html",
     "service-worker.js": "/tarot-score/service-worker.js",
     "service-worker.js.map": "/tarot-score/service-worker.js.map",
     "static/css/main.5a1f2dd0.chunk.css.map": "/tarot-score/static/css/main.5a1f2dd0.chunk.css.map",
-    "static/js/2.ce7f0f40.chunk.js.LICENSE.txt": "/tarot-score/static/js/2.ce7f0f40.chunk.js.LICENSE.txt"
+    "static/js/2.ea5a519b.chunk.js.LICENSE.txt": "/tarot-score/static/js/2.ea5a519b.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.4d173b5a.js",
-    "static/js/2.ce7f0f40.chunk.js",
+    "static/js/2.ea5a519b.chunk.js",
     "static/css/main.5a1f2dd0.chunk.css",
-    "static/js/main.41af2e18.chunk.js"
+    "static/js/main.f87fbf34.chunk.js"
   ]
 }
