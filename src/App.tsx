@@ -34,7 +34,7 @@ export default class App extends React.PureComponent<{}, AppState> {
     } else {
       return (
         <div className="App">
-          <BrowserRouter>
+          <BrowserRouter basename={process.env.PUBLIC_URL || ''}>
             <Switch>
               <Route path="/new" render={() => <NewGame database={database} />} />
               <Route
